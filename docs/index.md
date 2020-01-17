@@ -65,4 +65,43 @@ Logical Operators:
     
 #### Using variables in calculated columns
 
-* Pg. 126
+* The names of variables cannot:
+    * Include spaces.
+    * Be reserved keywords.
+* Variables can reference previously defined variables.
+
+> @icon-warning Variables can only be accessed within the DAX *EXPRESSION* that they are defined in.
+
+> @icon-warning Calculated columns consume RAM.
+
+#### Evaulation Context
+
+* Row Context
+    : the current location across an iterative structure, either *materialized* (such as an actual data model table) or *virtualized* (such as in an X function).
+* Filter Context
+    : the combination of all filters from:
+        * Visual, page, and report-level filters
+        * Axes in a visual
+        * Slicers
+        * Rows and columns in the Matrix visual
+        * etc.
+    > @icon-info-circle Filter context *cannot* distinguish between identical rows in an iterative structure. <br>
+    > @icon-info-circle Source columns used for sorting are also propagated throughout filter context.
+* Both contexts always co-exist, and either of them can be empty at a given time.
+* Basic aggregation functions ignore row context, such as `SUM`, `AVERAGE`, `COUNTROWS`, etc.
+> @icon-warning By default, **row context** ignores any established relationships unless `RELATED` or `RELATEDTABLE` are explicitly used.
+* Only filter context naturally utilizes existing relationships.
+* `CALCULATE` transforms **row context** into **filter context** (`CALCULATE`: row context @icon-arrow-right filter context).
+    * One required parameter: a DAX expression that works in filter context.
+* Context Transition
+    : Row context is transformed into filter context.
+    : This means that *for each row*, **the table is filtered down to contain only rows whose values match those of the currently iterated row**.
+    : Essentially,
+        1. A TSQL WHERE is performed.
+        2. The target column(s) of the result set are then aggregated with a primative aggregation function (e.g. `SUMX` @icon-arrow-right 1. Filter table rows. 2. Perform primative `SUM` aggregation).
+> @icon-info-circle `RELATEDTABLE` is an alias for `CALCULATETABLE`. <br>
+> @icon-info-circle To learn more context transition, read [Understanding Context Transition](https://www.sqlbi.com/articles/understanding-context-transition/) by Alberto Ferrari. Visit the various articles on [www.sqlbi.com](https://www.sqlbi.com/) to better understand all aspects of DAX evaulation context.
+
+#### Circular dependencies in calculated columns
+
+* @icon-refresh Pg. 132
