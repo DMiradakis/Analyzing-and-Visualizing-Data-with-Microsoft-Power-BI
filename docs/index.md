@@ -102,7 +102,7 @@ Logical Operators:
 > @icon-info-circle `RELATEDTABLE` is an alias for `CALCULATETABLE`. <br>
 > @icon-info-circle To learn more context transition, read [Understanding Context Transition](https://www.sqlbi.com/articles/understanding-context-transition/) by Alberto Ferrari. Visit the various articles on [www.sqlbi.com](https://www.sqlbi.com/) to better understand all aspects of DAX evaulation context.
 
-#### Circular dependencies in calculated columns <div id="last"></div>
+#### Circular dependencies in calculated columns
 
 * Circular Dependencies
     * Two separate calculated columns using `CALCULATE` with identical DAX expressions create an implicit `Circular Dependency Error`. This is a byproduct of the context transition.
@@ -136,6 +136,51 @@ Logical Operators:
     * Variables behave like constants in that they are **constant** after being evaluated.
     > @icon-info-circle To aid in DAX expressions where a table references its `EARLIER` rows, use a variable before the `CALCULATE`.
     > @icon-info-circle It is important to remember that when you perform context transition in large tables, the operation is much slower that filtering column values. Therefore, instead of filtering a table and doing context transition, it is advisable to pre-calculate the results in a calculated column and then filter by the column.
-* Pg. 136
+    ##### ALL
+    * `ALL` can be used to create calculated tables.
+    * Parameter Behavior
+        * When a *table* pararmeter is used, a copy of the original table is returned (including duplicate rows).
+        * When a *one-column* parameter is used, the result will be a table containing **distinct** values.
+        * When *multiple columns from the same table* are used, `ALL` returns a table of every *disticnt combination* of the columns.
+    * Parameter Restrictions
+        * `ALL` cannot accept another function as an argument.
+        * `ALL` cannot accept multiple columns from *different* tables as its parameter.
+        > @icon-info-circle Recall that a calculation function such as `SUM` that is *not* wrapped in a `CALCULATE` is often equivalent to wrapping the same function in a `CALCULATE` and nesting `ALL` inside the filter parameter. <br>
+    
+    * Virtual rows
+    
+        > @icon-warning Recall that, for a table on the *Many* side of a 1:Many relationship, if it contains rows not found in the table on the 1 side, DAX creates a virtual `BLANK` row in the 1 table that is invisible by default. <br>
+        > @icon-warning `ALL` includes virtual rows. <br>
+    
+        * Virtual rows inside tables can be removed in 3 ways:
+            1. Reference the original table in a new table by name.
+            2. Filter out the blank row with `FILTER`.
+            3. Use `ALLNOBLANKROW` function.
+                > @icon-info-circle Recall that `ALLNOBLANKROW` does **not** filter out *true* blank rows. Otherwise, it works the same as `ALL`.
+    * `ALLEXCEPT`
+        * `ALLEXCEPT` receives a table as the first parameter and a list of excluded columns in the following parameter.
+        * `ALLEXCEPT` is also useful for calculating subtotals in calculated columns without the need of `EARLIER` or `var`.
+        
+    ##### CALCULATETABLE
+    * `RELATEDTABLE` is an alias for `CALCULATETABLE` only when one argument is used.
+    * Unlike `FILTER`, `CALCULATETABLE` can accept more than one filter parameter.
+        * When multiple fitler parameters are used for `OR`, they must be on the **same column**.
+    > @icon-info-circle Recall that `CALCULATE` and `CALCULATETABLE` internally transform Boolean filter parameters into equivalent `CALCULATE(...,ALL()...)` tables.
+
+> @icon-info-circle For more information on the filter arguments in `CALCULATE`, see "Fitler Arguments in `CALCULATE`" at https://www.sqlbi.com/articles/filter-arguments-in-calculate/.
+
+#### VALUES and DISTINCT
+
+* Both functions receive a column reference as a parameter and return tables that contain only *distinct* rows.
+* Table Parameter
+    * Both tables can receive a table as a parameter.
+    > @icon-warning `VALUES` can only receive a physical table. `DISTINCT` can also receive a table expression.
+* Both functions do **not** remove filters from their table parameters.
+> @icon-warning `VALUES` includes virtual blank rows. `DISTINCT` does **not** include virtual blank rows.
+
+#### SUMMARIZE and SUMMARIZECOLUMNS
+
+* If referencing the Many table in a 1:Many relationship where the Many table contains values missing from the 1 table, then `SUMMARIZE` and `SUMMARIZECOLUMNS` will include the virtual blank row.
+* Pg. 146
     
     
