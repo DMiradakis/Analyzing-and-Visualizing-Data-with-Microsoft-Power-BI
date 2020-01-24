@@ -126,46 +126,50 @@ Logical Operators:
 * `CALCULATETABLE` only has one *required* parameter.
 * Table expressions can be used inside formulas of calculated columns and measures, as well as by themselves to materialize calculated tables.
 * **Duplicate** calculated tables can be created by setting them equal to the name of the original table (e.g. `Sales Duplicate Table = 'Sales'`).
-    ##### FILTER
-    * The filter condition parameter in the `FILTER` function is evaluated in **row context** for each row of the table from the table parameter.
-    * However, `FILTER` **does *not* trigger context transition**. It is essentially a TSQL `WHERE` statement.
-    > @icon-warning When `FILTER` is used in context transition, it generates new row context. This means that *for each row in the base table (where the calculated column is being created)*, **the iteration is performed against the rows of the table in `FILTER`** and *not* the rows in the base table.
-    * It is possible to access the original row context from the new one with the `EARLIER` function. This action is simialr to an excel `SUMIF`.
-    * Context transition (by way of calculated tables) can be created inside of `FILTER`.
-    ##### VARIABLES
-    * Variables behave like constants in that they are **constant** after being evaluated.
-    > @icon-info-circle To aid in DAX expressions where a table references its `EARLIER` rows, use a variable before the `CALCULATE`.
-    > @icon-info-circle It is important to remember that when you perform context transition in large tables, the operation is much slower that filtering column values. Therefore, instead of filtering a table and doing context transition, it is advisable to pre-calculate the results in a calculated column and then filter by the column.
-    ##### ALL
-    * `ALL` can be used to create calculated tables.
-    * Parameter Behavior
-        * When a *table* pararmeter is used, a copy of the original table is returned (including duplicate rows).
-        * When a *one-column* parameter is used, the result will be a table containing **distinct** values.
-        * When *multiple columns from the same table* are used, `ALL` returns a table of every *disticnt combination* of the columns.
-    * Parameter Restrictions
-        * `ALL` cannot accept another function as an argument.
-        * `ALL` cannot accept multiple columns from *different* tables as its parameter.
-        > @icon-info-circle Recall that a calculation function such as `SUM` that is *not* wrapped in a `CALCULATE` is often equivalent to wrapping the same function in a `CALCULATE` and nesting `ALL` inside the filter parameter. <br>
+
+#### FILTER
+
+* The filter condition parameter in the `FILTER` function is evaluated in **row context** for each row of the table from the table parameter.
+* However, `FILTER` **does *not* trigger context transition**. It is essentially a TSQL `WHERE` statement.
+> @icon-warning When `FILTER` is used in context transition, it generates new row context. This means that *for each row in the base table (where the calculated column is being created)*, **the iteration is performed against the rows of the table in `FILTER`** and *not* the rows in the base table.
+* It is possible to access the original row context from the new one with the `EARLIER` function. This action is simialr to an excel `SUMIF`.
+* Context transition (by way of calculated tables) can be created inside of `FILTER`.
     
-    * Virtual rows
+#### VARIABLES
+
+* Variables behave like constants in that they are **constant** after being evaluated.
+> @icon-info-circle To aid in DAX expressions where a table references its `EARLIER` rows, use a variable before the `CALCULATE`.
+> @icon-info-circle It is important to remember that when you perform context transition in large tables, the operation is much slower that filtering column values. Therefore, instead of filtering a table and doing context transition, it is advisable to pre-calculate the results in a calculated column and then filter by the column.
     
-        > @icon-warning Recall that, for a table on the *Many* side of a 1:Many relationship, if it contains rows not found in the table on the 1 side, DAX creates a virtual `BLANK` row in the 1 table that is invisible by default. <br>
-        > @icon-warning `ALL` includes virtual rows. <br>
-    
-        * Virtual rows inside tables can be removed in 3 ways:
-            1. Reference the original table in a new table by name.
-            2. Filter out the blank row with `FILTER`.
-            3. Use `ALLNOBLANKROW` function.
-                > @icon-info-circle Recall that `ALLNOBLANKROW` does **not** filter out *true* blank rows. Otherwise, it works the same as `ALL`.
-    * `ALLEXCEPT`
-        * `ALLEXCEPT` receives a table as the first parameter and a list of excluded columns in the following parameter.
-        * `ALLEXCEPT` is also useful for calculating subtotals in calculated columns without the need of `EARLIER` or `var`.
+#### ALL
+
+* `ALL` can be used to create calculated tables.
+* Parameter Behavior
+    * When a *table* pararmeter is used, a copy of the original table is returned (including duplicate rows).
+    * When a *one-column* parameter is used, the result will be a table containing **distinct** values.
+    * When *multiple columns from the same table* are used, `ALL` returns a table of every *disticnt combination* of the columns.
+* Parameter Restrictions
+    * `ALL` cannot accept another function as an argument.
+    * `ALL` cannot accept multiple columns from *different* tables as its parameter.
+    > @icon-info-circle Recall that a calculation function such as `SUM` that is *not* wrapped in a `CALCULATE` is often equivalent to wrapping the same function in a `CALCULATE` and nesting `ALL` inside the filter parameter. <br>
+* Virtual rows
+    > @icon-warning Recall that, for a table on the *Many* side of a 1:Many relationship, if it contains rows not found in the table on the 1 side, DAX creates a virtual `BLANK` row in the 1 table that is invisible by default. <br>
+    > @icon-warning `ALL` includes virtual rows. <br>
+    * Virtual rows inside tables can be removed in 3 ways:
+        1. Reference the original table in a new table by name.
+        2. Filter out the blank row with `FILTER`.
+        3. Use `ALLNOBLANKROW` function.
+            > @icon-info-circle Recall that `ALLNOBLANKROW` does **not** filter out *true* blank rows. Otherwise, it works the same as `ALL`.
+* `ALLEXCEPT`
+    * `ALLEXCEPT` receives a table as the first parameter and a list of excluded columns in the following parameter.
+    * `ALLEXCEPT` is also useful for calculating subtotals in calculated columns without the need of `EARLIER` or `var`.
         
-    ##### CALCULATETABLE
-    * `RELATEDTABLE` is an alias for `CALCULATETABLE` only when one argument is used.
-    * Unlike `FILTER`, `CALCULATETABLE` can accept more than one filter parameter.
-        * When multiple fitler parameters are used for `OR`, they must be on the **same column**.
-    > @icon-info-circle Recall that `CALCULATE` and `CALCULATETABLE` internally transform Boolean filter parameters into equivalent `CALCULATE(...,ALL()...)` tables.
+#### CALCULATETABLE
+
+* `RELATEDTABLE` is an alias for `CALCULATETABLE` only when one argument is used.
+* Unlike `FILTER`, `CALCULATETABLE` can accept more than one filter parameter.
+    * When multiple fitler parameters are used for `OR`, they must be on the **same column**.
+> @icon-info-circle Recall that `CALCULATE` and `CALCULATETABLE` internally transform Boolean filter parameters into equivalent `CALCULATE(...,ALL()...)` tables.
 
 > @icon-info-circle For more information on the filter arguments in `CALCULATE`, see "Fitler Arguments in `CALCULATE`" at https://www.sqlbi.com/articles/filter-arguments-in-calculate/.
 
@@ -180,7 +184,43 @@ Logical Operators:
 
 #### SUMMARIZE and SUMMARIZECOLUMNS
 
-* If referencing the Many table in a 1:Many relationship where the Many table contains values missing from the 1 table, then `SUMMARIZE` and `SUMMARIZECOLUMNS` will include the virtual blank row.
-* Pg. 146
+* `SUMMARIZE`'s two parameters:
+    1. A table to summarize.
+    2. At least one column to group by.
+* Nonsurjective Table Relationships:
+    > @icon-info-circle If referencing the Many table in a 1:Many relationship where the Many table contains values missing from the 1 table, then `SUMMARIZE` and `SUMMARIZECOLUMNS` *will* include the virtual blank row. <br>
+    However, if summarizing the 1 table, the virtual blank row *will not* be included. <br>
+    > @icon-info-circle However, `SUMMARIZECOLUMNS` *will* include the virtual blank row, regardless of which table.
+* The *columns to group by* parameter is optional if at least one new named column and expression is included in its place.
+* `SUMMARIZE` does *not* grant access to the row context of the table being summarized. Instead, `SUMMARIZE` divides the table into parts, grouping them by the selected columns, **where each part of the original table retains its *filter context***. <br> In other words, filter context is automatically present with `SUMMARIZE`.
+* `SUMMARIZECOLUMNS`, unlike `SUMMARIZE`, does *not* require a table parameter. Instead, the columns themselves are simply listed.
+> @icon-info-cirlce Read "All the secrets of `SUMMARIZE`" by Marco Russo and Alberto Ferrari at https://www.sqlbi.com/articles/introducing-summarizecolumns.
+
+#### ADDCOLUMNS and SELECTCOLUMNS
+
+* `ADDCOLUMNS` creates row context in the proecss of it adding new columns.
+* The new columns are known as extension columns.
+* `ADDCOLUMNS` takes three *required* parameters:
+    1. Base table to add columns to.
+    2. New column name.
+    3. New column expression.
+* `ADDCOLUMNS` Functionality:
+    > @icon-warning Unlike in `SUMMARIZE`, `ADDCOLUMNS` requires context transition that *must* be initialized through a nested `CALCULATE`.
+    * After creating context transition by way of `CALCULATE`, you can reference columns in the table to which you are adding more columns to.
+* `SELECTCOLUMNS` is very similar to `ADDCOLUMNS`, except that the original columns are not kept.
+    > @icon-warning `SELECTCOLUMNS` does *not* remove duplicate rows.
+    * The results of `SELECTCOLUMNS` can be grouped by extension columns referencing the column(s) inside of `SELECTCOLUMNS` within `SUMMARIZE`.
+    * In other words, `SELECTCOLUMNS` can be nested inside of a `SUMMARIZE`, and the second parameter of `SUMMARIZE` can reference the column(s) from `SELECTCOLUMNS`.
+    > @icon-info-circle Recall that when parameter two of `SUMMARIZE` references parameter one of `SUMMARIZE`, the column(s) being referenced in parameter two must be referenced *without a table name*.
+    > @icon-info-circle `SELECTCOLUMNS` can be used to rename columns. See https://blog.crossjoin.co.uk/2015/06/01/using-selectcolumns-to-alias-columns-in-dax/.
     
+#### TOPN
+
+* `TOPN` has *three* **required** parameters and *one* **optional** parameter:
+    1. N (a number).
+    2. Table expression.
+    3. Expression to order rows by.
+    4. ASC/DESC (the default is DESC).
+> @icon-info-circle `TOPN` uses row context, so `CALCLATE` is required inside of `TOPN` to force context transition.
+* Pg. 152
     
