@@ -220,7 +220,63 @@ Logical Operators:
     1. N (a number).
     2. Table expression.
     3. Expression to order rows by.
-    4. ASC/DESC (the default is DESC).
-> @icon-info-circle `TOPN` uses row context, so `CALCLATE` is required inside of `TOPN` to force context transition.
-* Pg. 152
-    
+    4. *(optional)* ASC/DESC (the default is DESC).
+> @icon-info-circle `TOPN` uses row context, so `CALCLATE` is required inside of `TOPN` to force context transition. <br>
+> @icon-warning In the case of a **tie**, more rows are returned than expected. <br>
+> @icon-info-circle With `TOPN`, it is also possible to order by more than one expression: in this case, expressions and orders come in pairs after the first expression and order pair.
+
+#### CROSSJOIN, GENERATE, and GENERATEALL
+
+* `CROSSJOIN` creates a **Cartesian product** between two or more tables.
+    * All columns in the resulting tables must be unique.
+    * Consequently, taking the Cartesian product of a table with itself requires renaming one of the columns of the tables in advance (use `SELECTCOLUMNS`, see pg. 153).
+    > @icon-warning There is no row context or context transition in `CROSSJOIN` for the second or subsequent tables. Consequently, to reference the current row of the first table in `CROSSJOIN`, use `GENERATE`. However, `CALCULATE` can be used as a nested function for the second (or subsequent) table expression parameters.
+* `GENERATE` always receives two table expressions as parameters.
+* `GENERATEALL` works the same way as `GENERATE` except that it returns all possible combinations.
+
+#### GENERATESERIES
+
+* `GENERATESERIES` generates a table with one column, called Value, containing a list of numbers with predefined increment.
+    > @icon-info-circle These values need not exist in the DAX Data Model.
+* `GENERATESERIES` parameters:
+    1. Start value.
+    2. End value.
+    3. *(optional)* Increment value (the default is 1).
+    > @icon-warning If Start value > End value, the result is a zero-row table.
+* `GENERATESERIES` automatically detects the data type being generated. Data types can also be explicitly specified in `GENERATESERIES`.
+* `GENERATESERIES` can be used to generate a list of datetime values.
+    > @icon-info-circle To use hourly increments, utilize the `TIME` function.
+* As an additional note, `GENERATESERIES` can also generate a list of letters by combining `SELECTCOLUMNS` and `UNICHAR`.
+* `UNICHAR` takes a positive integer as its only parameter and returns a Unicode character.
+
+#### CALENDAR and CALENDERAUTO
+
+* `CALENDER` generates a table of datetime data type.
+* `CALENDERAUTO` searches all date and datetime columns in the entire DAX Data Model and finds the minimum date and maximum date. It then takes **1 January of the minimum date's year** through **31 Decemeber of the maximum date's year**.
+    * `CALENDARAUTO` has one optional third parameter, which is the fiscal year end month number.
+> @icon-info-circle `MIN` and `MAX` allow for the comparison of two scalar values.
+
+#### ROW
+
+* `ROW` allows for the creation of one-row tables containing multiple columns.
+    * `ROW`'s parameters come in pairs:
+        1. Column name.
+        2. DAX expression.
+> @icon-info-circle `ROW` can be useful when adding a new row to a table using `UNION`.
+
+#### UNION
+
+* `UNION` combines tables vertically.
+* If both tables have rows that are identical in the other table, the duplicate rows are retained in the `UNION`.
+* `UNION`'s output table will have the same column names as the first table parameter.
+* `UNION` can be used to create common dimensions from several different tables.
+
+> @icon-warning If aligned columns in a `UNION` have differing data types, they will be combined in accordance with DAX data type coercion (e.g. type Text overrules type Whole Number). <br>
+
+> @icon-info-circle Power Query's `APPEND` combines tables vertically. It is essentially a `UNION`. <br>
+
+> @icon-info-circle Recall that tables can be hidden in the DAX Data Model.
+
+#### INTERSECT
+
+* Pg. 161
