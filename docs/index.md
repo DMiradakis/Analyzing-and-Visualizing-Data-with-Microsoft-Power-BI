@@ -279,4 +279,49 @@ Logical Operators:
 
 #### INTERSECT
 
-* Pg. 161
+* Table expressions are accepted.
+* Both table parameters must have the same number of columns, and `INTERSECT` combines tables based on the position of those columns.
+* The result table retains the column names from the *first* table parameter.
+> @icon-warning `INTERSECT` will retain duplicate matches from the *first* table parameter. This is why, technically, order matters in `INTERSECT`.
+
+#### EXCEPT
+
+* Table expressions are accepted.
+* `EXCEPT` takes two tables as arguments and outputs all rows that exist in the first table parameter but not the second table parameter.
+* The result table retains the column names from the *first* table parameter.
+> @icon-warning `EXCEPT` will retain duplicate matches from the *first* table parameter. This is why, technically, order matters in `EXCEPT`.
+
+#### NATURALINNERJOIN
+
+* Table expressions are accepted.
+* `NATURALINNERJOIN` is quite similar to Power Query's `Merge` function: it receives two tables as arguments and joins them based on common column names.
+* `NATURALINNERJOIN` joins two tables and outputs a table that has the same ***values*** present in join columns of both tables.
+> @icon-info-circle If the JOIN columns have different names in each table, then `NATURALINNERJOIN` will add each name as a separate column in the result table.
+* Order only matters in `NATURALINNERJOIN` when considering the order of the JOIN columns.
+* `NATURALINNERJOIN` can also join physical tables that have a relationship between them.
+    * In this case, order may not matter in the `JOIN`.
+* Shared column names must not exist in both tables in order to use `NATURALINNERJOIN`. Otherwise, the function will produce an error.
+> @icon-info-circle In general, all column names in *materialized* DAX tables should be unique. However, *virtual* tables are allowed to share column names in some cases.
+* The ability to join tables with common column names can be useful when passing filters to `CALCULATE` and `CALCULATETABLE`.
+
+#### NATURALLEFTOUTERJOIN
+
+* `NATURALLEFTOUTERJOIN` returns:
+    1. A table with all rows from the first table **and** 
+    2. Extra columns from the second table where values in the join columns of the second (right) table are present in the join columns of the first (left) table.
+* `NATURALLEFTOUTERJOIN` can also join physical tables that have a relationship between them.
+
+#### DATATABLE
+
+* `DATATABLE` allows you to create calculated tables with data that you enter manually.
+* `DATATABLE` as a minimum of three parameters:
+    1. Column name.
+    2. Data type (BOOLEAN, CURRENCY, DATETIME, DOUBLE, INTEGER, STRING).
+    3. List of values (the list itself is in {} **and** the values themselves are in {}).
+> @icon-info-circle Think of a value in the third parameter of `DATATABLE` as an entire row. Thus, *the row itself* is wrapped in {}, not each column value of a row (e.g. {1, "String", TRUE}). <br>
+
+> @icon-warning The values in the third parameter must be **constants**. DAX expressions are *not* allowed.
+* An actual table can be created within `DATATABLE` by listing column names and data types in pairs before the third parameter (the list of values).
+> @icon-info-circle Think of `DATATABLE` similar to `SUMMARIZE` over a manually created table.
+
+* Pg. 170
