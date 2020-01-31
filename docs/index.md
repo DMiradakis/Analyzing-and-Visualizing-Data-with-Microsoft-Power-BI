@@ -324,4 +324,54 @@ Logical Operators:
 * An actual table can be created within `DATATABLE` by listing column names and data types in pairs before the third parameter (the list of values).
 > @icon-info-circle Think of `DATATABLE` similar to `SUMMARIZE` over a manually created table.
 
-* Pg. 170
+* Anonymous tables can also be defined in DAX by doing the following:
+    1. Use one set of {} for the entire table.
+    2. Use a comma separated list of () for the values. If the anonymous table is a multicolumn table, then the column values should be listed in each () set.
+    * In anonymous tables, DAX will name the columns **Value1**, **Value2**, **Value3**, etc.
+> @icon-info-circle To read more about `DATATABLE`, see Marco Russo's article [Create Static Tables in DAX Using the DATATABLE Function](https://www.sqlbi.com/articles/create-static-tables-in-dax-using-the-datatable-function/).
+
+#### Using variables in calculated tables
+
+> @icon-warning Remember that variables are only evaluated **once** in the context in which they are defined. Because of this, they are **USELESS** in iterator functions like `CALCULATE` and `CALCULATETABLE`. In other words, variables are **immutable** after the **first evaulation**.
+
+> @icon-info-circle To see more information about using `GENERATE`/`ROW` instead of `ADDCOLUMNS`, see [Using GENERATE and ROW instead of ADDCOLUMNS in DAX](https://www.sqlbi.com/articles/using-generate-and-row-instead-of-addcolumns-in-dax/).
+
+#### Measures
+
+> @icon-info-circle Measures aggregate columns and tables, and they **always** work in filter context. Consequently, *by default*, there is no concept of the **current row** in measures. You cannot create a measure in the same way that you can a calculated column, iterating row by row through a table.
+
+* The basic aggregation functions, such as `SUM`, `AVERAGE`, `MIN`, `MAX`, etc. take a column reference as their once parameter. They are essentially syntatic sugar for their iterator foundations.
+* Please note that the following two DAX expressions below are equivalent:
+    * `Total Net Profit = SUM ( Example[Net Profit] )`
+    * `Total Net Profit = SUMX ( Example, Example[Net Profit] )`
+* For iterator functions, the internal calculations of the DAX expression are evaluated first, and then the set of those calculations are aggregated by the iterator function.
+* Since iterators generate row context, all row functions (such as `RELATED`) can be used in them.
+
+#### Measures vs. calculated columns
+
+* Calculated columns are computed when:
+    * They are first defined.
+    * A data refresh occurs.
+* Calculated columns are materialized; therefore, they consume RAM and disk space.
+* On the other hand, measures are calculated at query time. Every interaction with a visual or slicer triggers measures to recalculate themselves. Therefore, measures consume CPU resources.
+
+> @icon-warning Recall that measures *cannot* be placed into slicers.
+
+#### Counting values in DAX
+
+* There are several count functions within DAX:
+    * `COUNT`
+    * `COUNTA`
+    * `COUNTAX`
+    * `COUNTBLANK`
+    * `COUNTROWS`
+    * `COUNTX`
+    * `DISTINCTCOUNT`
+> @icon-info-circle Recall that:
+> * `COUNTROWS` takes a *table expression* as its parameter.
+> * `COUNT` takes a column reference as its parameter and counts the number of *non-blank values*.
+> * `COUNT` cannot handle Boolean values.
+> * `COUNTA` counts the number of non-blank values *regardless of their datatype*.
+
+* Pg. 177
+
